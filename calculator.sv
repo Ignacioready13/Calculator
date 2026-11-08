@@ -28,8 +28,7 @@ module calculator #(
     // input logic [1:0] whereToStore,
 
     input logic [0:0] CLK,
-    // input logic [0:0] write,
-    // output logic [WIDTH-1:0] resultFromMemory,
+    
 
     //inputs from the constraints file
 
@@ -44,10 +43,15 @@ module calculator #(
     logic signed [WIDTH-1:0] a, b;
     logic [1:0] operator;
     logic [WIDTH-1:0] resultIntoMemory;
+    logic [WIDTH-1:0] resultFromMemory;
 
-    logic [0:0] is_it_a_digit_being_typed; //between controller and keypad
+    logic [2:0] keyType; //between controller and keypad
 
     logic [WIDTH-1:0] digit_from_keypad_to_memory;
+
+    logic [1:0] whereToStore;
+
+    
 
     ALU #(.WIDTH(WIDTH)) alu_instance (
         .a(a),
@@ -60,8 +64,7 @@ module calculator #(
         .resultIntoMemory(resultIntoMemory),
         .resultFromMemory(resultFromMemory),
         .digitIn(digit_from_keypad_to_memory),
-        .whereToStore(whereToStore),
-        .write(write), //forgot about this one
+        .whereToStore(whereToStore), //output from controller into here
         .a(a),
         .b(b),
         .op(operator)
@@ -71,14 +74,23 @@ module calculator #(
         .digitOut(digit_from_keypad_to_memory), //connect .innerVar(outerVar)
         .rowSet(rowSet),
         .columnGet(columnGet),
-        .is_it_a_digit_being_typed(is_it_a_digit_being_typed)
+        .keyType(keyType)
     );
 
     controller #(.WIDTH(WIDTH)) controller_instance (
-        .is_it_a_digit_being_typed(is_it_a_digit_being_typed)
+        .CLK(CLK),
+        .whereToStore(whereToStore),
+        .keyType(keyType)
+
+   
     );
 
-    OutputBlock #(.WIDTH(WIDTH)) display_instance (.*); //pass in width parameter so we can use it
+    OutputBlock #(.WIDTH(WIDTH)) display_instance (
+        .CLK(CLK),
+        
+        .D0_AN(D0_AN),
+        .D0_SEG(D0_SEG)
+    ); //pass in width parameter so we can use it
 
 
 

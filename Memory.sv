@@ -36,17 +36,24 @@ module Memory#(
     input logic signed [WIDTH-1:0] resultIntoMemory, //result from ALU
     input logic [1:0] whereToStore, //given by the controller.
     //input logic [0:0] write, //i dont think we need this, if digitIn only activates when we want it
-    //actually... why does memory block want seperate digit from op? how about just a number + a whereToStore to be consistent
 
 
-    output logic signed [WIDTH-1:0] a = 0, b = 0, resultFromMemory = 0,
+    output logic signed [WIDTH-1:0] a = 0, b = 0, resultFromMemory = 0, //resultFromMemory: our output result, read by Memory
     output logic [1:0] op = 0
     );
     
     //we need for whereToStore and digitIn to be ready at the same time. 
-    
+
      always_ff@(posedge CLK) begin
-        if (write == 1'b1) begin //write is allowed
+        if (digitIn == 4'd14) begin
+            //CLEAR pulse. only happens for one clock.
+            a <= 0;
+            b <= 0;
+            op <= 0;
+            resultFromMemory <= 0;
+            //result automatically updates combinationally.
+            
+        end else if (digitIn != 4'd15) begin //gate: if digitIn is dead value, then don't write.
             case (whereToStore)
                 //whereToStore is 4 bits.
                 //00 and 01 are A and B. 10 is Operator. 11 is result.
@@ -65,6 +72,8 @@ module Memory#(
                 //addition until you give it an operator.
             endcase
         end
+        
+       
         
 
         
