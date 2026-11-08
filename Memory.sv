@@ -23,15 +23,27 @@
 module Memory#(
     parameter int WIDTH = 11	// So we can change the width easily
 )(
+
+    //HOW TO USE THIS MEMORY BLOCK
+    //1. set write to true
+    //2. want to give us a digit? set digitIn to 0-9, set whereToStore to 00 or 01 (A or B)
+    //3. give us an operator? set digitIn to 11 12 13 or 14. and whereToStore to 10 (meaning its an op).
+
+    //send things in order please.
+
     input logic [0:0] CLK,
     input logic [3:0] digitIn,
     input logic signed [WIDTH-1:0] resultIntoMemory, //result from ALU
     input logic [1:0] whereToStore, //given by the controller.
-    input logic [0:0] write,
+    //input logic [0:0] write, //i dont think we need this, if digitIn only activates when we want it
+    //actually... why does memory block want seperate digit from op? how about just a number + a whereToStore to be consistent
+
+
     output logic signed [WIDTH-1:0] a = 0, b = 0, resultFromMemory = 0,
     output logic [1:0] op = 0
     );
     
+    //we need for whereToStore and digitIn to be ready at the same time. 
     
      always_ff@(posedge CLK) begin
         if (write == 1'b1) begin //write is allowed
@@ -43,7 +55,7 @@ module Memory#(
 
                 //store the OPERATOR. 10 = + = 00.
                 2'b10: op <= digitIn - 10; 
-
+                
                 //store RESULT (coming from ALU)
                 2'b11: resultFromMemory <= resultIntoMemory; 
                 //if you tell it whereToStore = b11 then it'll grab the current result from ALU and store it.
