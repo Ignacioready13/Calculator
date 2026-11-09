@@ -29,7 +29,14 @@ module controller#(
     //instead of passing in the entire number; makes synthesized circuit lighter
 
     output logic [1:0] whereToStore = 2'b00, //A slot by default.
-    output logic [WIDTH-1:0] memorySlotToDisplay
+    //00: A
+    //01: B
+    //10: OP
+    //11: RESULT
+
+    output logic [1:0] memorySlotToDisplay = 2'b00
+    //same convention as whereToStore.
+    //except we never display the operator. Can't do on a 7-segment.
 
 );
 
@@ -53,7 +60,7 @@ module controller#(
     always_comb begin
         nextState = currentState; //stay like this if nothing changes. avoid a latch.
         
-        case ({currentState, keyType})
+        case ({currentState, keyType}) //keyType is a pulse.
             {3'd0, 3'd1}: begin 
                 //in state 0 and they typed a digit.
                 nextState = 3'd1;
@@ -88,22 +95,31 @@ module controller#(
         case (nextState) //that way whereToStore is instantly up to date for Memory
             {3'd0}: begin //should NOT matter. no keys have been pressed yet.
                 whereToStore = 2'b00; //to be safe
+                memorySlotToDisplay = 2'b00; //displays 0
             end
             {3'd1}: begin
                 whereToStore = 2'b00; //A
+                memorySlotToDisplay = 2'b00; //display A while typing A
             end
             {3'd2}: begin
                 whereToStore = 2'b10; //operator
+                memorySlotToDisplay = 2'b00; //keep displaying A til they type B
             end
             {3'd3}: begin
                 whereToStore = 2'b01; //B
+                memorySlotToDisplay = 2'b01;
             end
             {3'd4}: begin
                 whereToStore = 2'b11; //essentially just a command to tell Memory
                 //to grab result from ALU and store it in result slot. It won't
                 //care what digitIn is.
+                memorySlotToDisplay = 2'b11; //display result.
+                //once we type CLEAR we go to state 0 and start displaying A again
             end
-            default: whereToStore = 2'b00; //impossible, but avoids latch
+            default: begin
+                whereToStore = 2'b00; //impossible, but avoids latch
+                memorySlotToDisplay = 2'b00;
+            end 
         endcase
 
     end

@@ -47,10 +47,11 @@ module calculator #(
 
     logic [2:0] keyType; //between controller and keypad
 
-    logic [WIDTH-1:0] digit_from_keypad_to_memory;
+    logic [3:0] digit_from_keypad_to_memory;
 
     logic [1:0] whereToStore;
 
+    logic [1:0] memorySlotToDisplay;
     
 
     ALU #(.WIDTH(WIDTH)) alu_instance (
@@ -80,16 +81,22 @@ module calculator #(
     controller #(.WIDTH(WIDTH)) controller_instance (
         .CLK(CLK),
         .whereToStore(whereToStore),
-        .keyType(keyType)
+        .keyType(keyType),
+        .memorySlotToDisplay(memorySlotToDisplay)
 
-   
     );
 
     OutputBlock #(.WIDTH(WIDTH)) display_instance (
         .CLK(CLK),
         
         .D0_AN(D0_AN),
-        .D0_SEG(D0_SEG)
+        .D0_SEG(D0_SEG),
+
+        .a(a),
+        .b(b),
+        .resultFromMemory(resultFromMemory),
+
+        .memorySlotToDisplay(memorySlotToDisplay)
     ); //pass in width parameter so we can use it
 
 

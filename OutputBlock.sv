@@ -23,12 +23,20 @@
 module OutputBlock#(
     parameter int WIDTH = 11	// So we can change the width easily
 )(
-    input logic [WIDTH-1:0] numberIn,
+    input logic [1:0] memorySlotToDisplay,
+
+    //access all the Memory slots.
+    input logic [WIDTH-1:0] a,
+    input logic [WIDTH-1:0] b,
+    input logic signed [WIDTH-1:0] resultFromMemory,
+
     input logic [0:0] CLK,
     output logic [3:0] D0_AN,
     output logic [7:0] D0_SEG
     
 );
+
+    logic [WIDTH-1:0] numberIn;
 
     logic [14:0] clkCounter = 0; //15 bits can store a bit more than 32,000.
     logic [3:0] digitPosition = 4'b1110; //4 digits. 1-4 means that respective digit is on.
@@ -39,8 +47,12 @@ module OutputBlock#(
     //10 bit array holds 0-9
     //Each index holds A-G, plus the period, which is 8
 
-    bit [9:0] [7:0] digitMap = '{
+    bit [11:0] [7:0] digitMap = '{
         //GFEDCBA backwards order.
+        //period is the.. first one?
+
+        11: 8'b10111111, //negative
+        10: 8'b11111111, //all blank
         9: 8'b10010000,
         8: 8'b10000000,
         7: 8'b11111000,
@@ -53,8 +65,26 @@ module OutputBlock#(
         0: 8'b11000000
     };
     always_comb begin
+        //go find whatever value Controller is asking us to display.
+        case(memorySlotToDisplay)
+            2'b00: numberIn = a;
+            2'b01: numberIn = b;
+            2'b11: numberIn = resultFromMemory;
+            default: numberIn = a; //we'll never get sent Operator code 10. but just to be safe.
+        endcase
+        if (resultFromMemory < 0) begin 
+            //we're being asked to display a negative value (the result is negative).
+            //not easy to do on the seven-segment display; we'll just display the absolute value and document that
+            numberIn = ~resultFromMemory + 1'b1; 
+        end
+
         //take the numberIn, which is binary, and convert to digits.
-        digits[0] = (numberIn / 1000) % 10; //we want thousands place. 
+        //digits[0] = (numberIn / 1000) % 10; //we want thousands place. 
+        if (resultFromMemory < 0) begin
+            digits[0] = 11; //show negative sign
+        end else begin
+            digits[0] = 10; //show blank
+        end
         digits[1] = (numberIn / 100) % 10;  //div by 100 shifts decimal place 
         //left, truncates other stuff. mod 10 to get whats right next to decimal place
         digits[2] = (numberIn / 10) % 10;
@@ -70,7 +100,7 @@ module OutputBlock#(
         end
         else begin
             //DRAWING A DIGIT
-            
+
             
             //if we wanna draw digit 9, assign D0_SEG to 9th entry in map
             

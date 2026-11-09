@@ -23,30 +23,28 @@
 module ALU #(
     parameter int WIDTH = 11
 )(
-    input  logic signed [WIDTH-1:0] a,
-    input  logic signed [WIDTH-1:0] b,
-    input  logic [1:0] operator,
-    output logic signed [WIDTH-1:0] y
+    input logic [WIDTH-1:0] a,
+    input logic [WIDTH-1:0] b,
+    input logic [1:0] operator,
+    output logic signed [WIDTH-1:0] resultIntoMemory
 );
 
-    typedef enum logic [1:0] {
-        ADD  = 2'b00,
-        SUB  = 2'b01,
-        MULT = 2'b10,
-        DIV  = 2'b11
-    } oper_t;
-
-    always_comb //operator starts as 00, addition, so result may be BS until we get
-    //the actual operator typed in. It's whatever.
-        case (operator)
-            ADD:  y = a + b;
-            SUB:  y = a - b;
-            MULT: y = a * b;
-            DIV:  if (b == 0)
-                      y = '0; //dont divide by 0
-                  else
-                      y = a / b;
-            default: y = '0;
+    always_comb begin
+        case(operator)
+            2'b00: resultIntoMemory = a + b; //add
+            2'b01: resultIntoMemory = a - b; //subtract
+            2'b10: resultIntoMemory = a * b; //multiply
+            2'b11: begin 
+                if (b == 0) begin
+                    resultIntoMemory = 0; //don't divide by 0.
+                end else begin
+                    resultIntoMemory = a / b; //divide
+                end
+                
+            end 
         endcase
+    end
 
 endmodule
+
+

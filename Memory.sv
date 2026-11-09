@@ -38,7 +38,8 @@ module Memory#(
     //input logic [0:0] write, //i dont think we need this, if digitIn only activates when we want it
 
 
-    output logic signed [WIDTH-1:0] a = 0, b = 0, resultFromMemory = 0, //resultFromMemory: our output result, read by Memory
+    output logic [WIDTH-1:0] a = 0, b = 0,
+    output logic signed [WIDTH-1:0] resultFromMemory = 0, //resultFromMemory: our output result, read by Memory
     output logic [1:0] op = 0
     );
     
@@ -64,7 +65,10 @@ module Memory#(
                 2'b10: op <= digitIn - 10; 
                 
                 //store RESULT (coming from ALU)
-                2'b11: resultFromMemory <= resultIntoMemory; 
+                //also allow RESULT to be used in future calculations: store it in A and clear the rest
+                2'b11: begin 
+                    resultFromMemory <= resultIntoMemory;
+                end 
                 //if you tell it whereToStore = b11 then it'll grab the current result from ALU and store it.
                 //doesn't care what digitIn is.
 
