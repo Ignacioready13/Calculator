@@ -48,8 +48,8 @@ module OutputBlock#(
     //Each index holds A-G, plus the period, which is 8
 
     bit [11:0] [7:0] digitMap = '{
-        //GFEDCBA backwards order.
-        //period is the.. first one?
+        //.GFEDCBA backwards order.
+        //period is the first one. always off.
 
         11: 8'b10111111, //negative
         10: 8'b11111111, //all blank
