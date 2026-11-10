@@ -58,7 +58,7 @@ module calculator #(
         .a(a),
         .b(b),
         .operator(operator),
-        .y(resultIntoMemory)
+        .resultIntoMemory(resultIntoMemory)
     );
     Memory #(.WIDTH(WIDTH)) memory_instance (
         .CLK(CLK),
